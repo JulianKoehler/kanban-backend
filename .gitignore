@@ -1,4 +1,6 @@
 *.env
 *.env.local
+gunicorn.service
+nginx
 venv/
 __pycache__

@@ -27,4 +27,4 @@ app.include_router(subtasks.router)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "API is up and running"}
