@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    auth_email_service_password: str
+    auth_email_service_sender_address: str
+    auth_email_service_smtp_server: str
 
 
 settings = Settings()

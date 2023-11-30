@@ -28,9 +28,17 @@ class UserInfoReturn(UserReturn):
     is_email_verified: bool
 
 
+class UserPasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class NewUserPassword(Token):
+    password: str
 
 
 class TokenData(BaseModel):

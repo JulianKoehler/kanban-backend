@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .router import users, auth, boards, stages, tasks, subtasks
+from .email_service import auth_email_service
 
 
 app = FastAPI()
@@ -28,3 +29,5 @@ app.include_router(subtasks.router)
 @app.get("/")
 async def root():
     return {"message": "API is up and running"}
+
+# auth_email_service.password_forgotten(recipient="julkoehl@icloud.com")

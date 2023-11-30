@@ -1,12 +1,12 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import UUID4
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
-from app.oauth2 import get_current_user
+from app.oauth2 import create_access_token, get_current_user
 from app.database import get_db
 from app.schemas import UserCreate, UserInfoReturn, UserReturn
-from app.models import User
+from app.models import Board, User
 from app.utils.helpers import getFirstAndLastName, hash
 
 import os
@@ -39,7 +39,7 @@ def get_all_users(db: Session = Depends(get_db)):
     if IS_DEV:
         return users
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
 
 @router.get("/{id}", response_model=UserReturn)
@@ -57,7 +57,7 @@ def get_user(id: UUID4, db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserReturn)
-def create_user(client_data: UserCreate, db: Session = Depends(get_db)):
+def create_user(client_data: UserCreate, response: Response,  db: Session = Depends(get_db)):
 
     user_data = transform_client_data(client_data)
     new_user = User(**user_data)
@@ -75,12 +75,24 @@ def create_user(client_data: UserCreate, db: Session = Depends(get_db)):
             print(e)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error, please check the server logs.")
     
-    # TODO: Create Token and login automatically
+    access_token = create_access_token({ "user_id": str(new_user.id)})
+
+    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+
     return new_user
 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    
+    boards = db.query(Board).filter(Board.id == current_user.id).all()
+
+    if boards:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Delete all of your boards before you delete your account.')
+    
+    # TODO Später wenn man User zu seinen Boards hinzufügen kann, soll der User bevor er seinen Account löscht für jedes seiner Boards einen neuen Owner festlegen!
 
     db.query(User).filter(User.id == current_user.id).delete()
     db.commit()
