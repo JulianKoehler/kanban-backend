@@ -97,6 +97,7 @@ def generate_reset_link(id: UUID4):
     pwd_reset_token = create_access_token(
         data={'user_id': str(id)}, expires_delta=timedelta(minutes=5))
     BASE_URL = 'http://localhost:3000/' if IS_DEV else 'https://kanban-board-jet.vercel.app/'
+    # If you change the name of the query param, make sure to adjust the frontend code
     reset_link = f'{BASE_URL}/new-password?token={pwd_reset_token}'
 
     return reset_link

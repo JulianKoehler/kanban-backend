@@ -1,6 +1,6 @@
 from typing import List
 import uuid
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, Table, text, UUID
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Table, asc, text, UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .database import Base
 
@@ -42,7 +42,7 @@ class Board(Base):
     owner: Mapped["User"] = relationship(back_populates="own_boards")
     contributors: Mapped[List["User"]] = relationship(secondary=boards_users, back_populates="boards_contributing")
     
-    stages: Mapped[List["Stage"]] = relationship()
+    stages: Mapped[List["Stage"]] = relationship(order_by='asc(Stage.index)')
 
     def __repr__(self) -> str:
         return f"<Board title={self.title} created by {self.owner.first_name} {self.owner.last_name}>"
@@ -75,7 +75,7 @@ class Task(Base):
     description: Mapped[str] = mapped_column(nullable=False)
 
     status: Mapped["Stage"] = relationship()
-    subtasks: Mapped[List["Subtask"]] = relationship()
+    subtasks: Mapped[List["Subtask"]] = relationship(order_by='asc(Subtask.index)')
 
     def __repr__(self) -> str:
         return f"<Task title={self.title} in stage {self.stage_id}>"

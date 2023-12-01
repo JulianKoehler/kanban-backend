@@ -3,7 +3,8 @@ from typing import List
 from pydantic import UUID4
 from app.database import get_db
 from app.router.stages import create_new_stage, delete_stage, update_stages
-from app.schemas import BoardCreateResponse, BoardDataReturn, BoardListReturn, BoardCreate, BoardUpdate, StageCreate, StageUpdate
+from app.router.subtasks import create_new_subtask
+from app.schemas import BoardCreateResponse, BoardDataReturn, BoardListReturn, BoardCreate, BoardMigration, BoardUpdate, StageCreate, StageMigration, StageUpdate, SubtaskCreate, TaskCreate
 from app.models import Task, User, Board
 from app.oauth2 import get_current_user
 from sqlalchemy.orm import Session
@@ -87,6 +88,50 @@ def delete_board(id: UUID4, db: Session = Depends(get_db), current_user: User = 
     db.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+# HERE BE DRAGONS
+# Only for one time use: Migrate Datamodel from Firestore to Postgres database
+
+@router.post("/migrate")
+def migrate_board_data(client_data: BoardMigration, db: Session = Depends(get_db)):
+    board_data = client_data.model_dump()
+    board_data.update({ "owner_id": (client_data.user_id) })
+    stages: List[StageMigration] = board_data.pop("stages")
+    board_data.pop('user_id')
+
+
+    new_board = Board(**board_data)
+
+    db.add(new_board)
+    db.commit()
+    db.refresh(new_board)
+
+    # After board creation we can access its ID to create the stages with the fkey board_id
+    for stage in stages:
+        tasks: List[TaskCreate] = stage.pop('tasks')
+        new_stage = create_new_stage(stage, db, new_board.id)
+        db.commit()
+        db.refresh(new_stage)
+
+        for task in tasks:
+            subtasks: List[SubtaskCreate] = task.pop('subtasks')
+            task.pop('board_id')
+            task.update({ 'stage_id': new_stage.id})
+            new_task = Task(**task)
+            db.add(new_task)
+            db.commit()
+            db.refresh(new_task)
+
+            subtasks_exist = len(subtasks) > 0
+            if subtasks_exist:
+                for subtask in subtasks:
+                    create_new_subtask(subtask, db, new_task.id)
+
+                db.commit()
+
+
 
 
 

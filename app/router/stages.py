@@ -49,6 +49,7 @@ def create_new_stage(stage: StageUpdate, db: Session, board_id: UUID4):
         }
         new_stage = Stage(**stage_data)
         db.add(new_stage)
+        return new_stage
 
 
 def validate_stage_id(stage: StageUpdate):

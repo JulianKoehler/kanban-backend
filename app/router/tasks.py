@@ -58,9 +58,7 @@ def update_task(id: UUID4, client_data: TaskUpdate, db: Session = Depends(get_db
     subtasks: List[SubtaskCreate] = new_task_data.pop('subtasks')
 
     task_query.update(new_task_data, synchronize_session=False)
-
     update_subtasks(subtasks, db, task.id)
-
     db.commit()
 
     return task

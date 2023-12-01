@@ -87,7 +87,7 @@ def delete_user(db: Session = Depends(get_db), current_user: User = Depends(get_
     if not current_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     
-    boards = db.query(Board).filter(Board.id == current_user.id).all()
+    boards = db.query(Board).filter(Board.owner_id == current_user.id).all()
 
     if boards:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Delete all of your boards before you delete your account.')

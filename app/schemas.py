@@ -66,8 +66,8 @@ class TaskBase(BaseModel):
 
 
 class TaskCreate(TaskBase):
-    board_id: UUID4
-    stage_id: UUID4
+    board_id: str
+    stage_id: str
     subtasks: List[SubtaskCreate]
 
 
@@ -146,3 +146,11 @@ class BoardListReturn(BaseModel):
 class BoardDataReturn(BoardBase):
     id: UUID4
     stages: List[StageResponse]
+
+
+class StageMigration(StageCreate):
+    tasks: List[TaskCreate]
+
+class BoardMigration(BoardBase):
+    user_id: UUID4
+    stages: List[StageMigration]
