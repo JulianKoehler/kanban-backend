@@ -7,7 +7,8 @@ from .email_service import auth_email_service
 app = FastAPI()
 
 origins = [
-    "*"
+    "192.168.178.62",
+    "https://kanban-board-jet.vercel.app",
 ]
 
 app.add_middleware(

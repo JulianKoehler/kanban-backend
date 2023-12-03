@@ -58,7 +58,7 @@ def get_user(id: UUID4, db: Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserReturn)
 def create_user(client_data: UserCreate, response: Response,  db: Session = Depends(get_db)):
-    print(client_data)
+
     user_data = transform_client_data(client_data)
     new_user = User(**user_data)
 
@@ -70,7 +70,7 @@ def create_user(client_data: UserCreate, response: Response,  db: Session = Depe
         db.rollback()
         error_message = str(e)
         print(error_message)
-        if "unique-constraint" in error_message.lower() and "email" in error_message.lower():
+        if "unique-constraint" in error_message.lower() or "unique constraint" in error_message.lower():
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email '{client_data.email}' already in use.")
         else:
             print(e)
