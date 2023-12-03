@@ -7,7 +7,7 @@ from .email_service import auth_email_service
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
+    "*"
 ]
 
 app.add_middleware(
@@ -29,5 +29,3 @@ app.include_router(subtasks.router)
 @app.get("/")
 async def root():
     return {"message": "API is up and running"}
-
-# auth_email_service.password_forgotten(recipient="julkoehl@icloud.com")

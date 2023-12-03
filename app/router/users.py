@@ -69,6 +69,7 @@ def create_user(client_data: UserCreate, response: Response,  db: Session = Depe
     except exc.SQLAlchemyError as e:
         db.rollback()
         error_message = str(e)
+        print(error_message)
         if "unique-constraint" in error_message.lower() and "email" in error_message.lower():
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email '{client_data.email}' already in use.")
         else:
