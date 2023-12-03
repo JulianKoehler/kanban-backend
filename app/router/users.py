@@ -58,7 +58,7 @@ def get_user(id: UUID4, db: Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserReturn)
 def create_user(client_data: UserCreate, response: Response,  db: Session = Depends(get_db)):
-
+    print(client_data)
     user_data = transform_client_data(client_data)
     new_user = User(**user_data)
 
