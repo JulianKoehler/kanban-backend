@@ -40,8 +40,8 @@ def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], res
 
     access_token = create_access_token({"user_id": str(user.id)})
 
-    response.set_cookie(key="access_token",
-                        value=f"Bearer {access_token}", httponly=True)
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True, secure=True, samesite='none')
 
     return user
 
@@ -70,7 +70,7 @@ async def send_password_reset_email(client_data: UserPasswordResetRequest, db: S
     if has_errors:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                             detail=f"Could not send email. Please try again later.")
-    
+
 
 @router.post('/password/new', status_code=status.HTTP_201_CREATED)
 def update_password(client_data: NewUserPassword, response: Response, db: Session = Depends(get_db)):
@@ -80,17 +80,18 @@ def update_password(client_data: NewUserPassword, response: Response, db: Sessio
     user = user_query.first()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     new_password = hash(client_data.password)
-    user_query.update({ 'password': new_password})
-    
+    user_query.update({'password': new_password})
+
     db.commit()
 
-    access_token = create_access_token({ "user_id": str(user.id) })
+    access_token = create_access_token({"user_id": str(user.id)})
 
-    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
-
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True, secure=True, samesite='none')
 
 
 def generate_reset_link(id: UUID4):
