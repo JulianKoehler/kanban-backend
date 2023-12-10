@@ -48,7 +48,7 @@ def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], res
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def logout(response: Response):
-    response.delete_cookie("access_token", httponly=True)
+    response.delete_cookie("access_token")
 
     return {"message": "Logout successful"}
 
