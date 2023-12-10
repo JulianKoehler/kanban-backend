@@ -72,7 +72,7 @@ class TaskCreate(TaskBase):
 
 
 class TaskUpdate(TaskCreate):
-    subtasks: List[SubtaskUpdate]
+    subtasks: List[SubtaskCreate | SubtaskUpdate]
 
 
 class TaskUpdateStage(BaseModel):
