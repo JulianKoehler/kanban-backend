@@ -23,7 +23,8 @@ class Auth_email_service():
         return self.__send_email(recipient=recipient, subject="Reset your password", message=message)
 
     def __send_email(self, recipient: EmailStr, subject: str, message: str):
-        with smtplib.SMTP_SSL(settings.auth_email_service_smtp_server, port=465) as connection:
+        with smtplib.SMTP_SSL(settings.auth_email_service_smtp_server) as connection:
+            connection.set_debuglevel(1)
             connection.starttls()
             connection.login(user=self.sender_address, password=self.app_password)
             result = connection.sendmail(from_addr=self.sender_address,
