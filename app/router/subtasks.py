@@ -23,8 +23,6 @@ def toggle_subtask_complete(id: UUID4, db: Session = Depends(get_db)):
 
     db.commit()
 
-    print(subtask)
-
     return subtask
 
 
@@ -36,10 +34,10 @@ def update_subtasks(subtasks: List[SubtaskCreate | SubtaskUpdate], db: Session, 
         update_subtask(subtask, db)
 
 
-def create_new_subtask(subtask: SubtaskCreate, db: Session, task_id: UUID4):
-    if not subtask.get('id'):
-        subtask.update({'task_id': task_id})
-        new_subtask = Subtask(**subtask)
+def create_new_subtask(subtask: SubtaskCreate | SubtaskUpdate, db: Session, task_id: UUID4):
+    if subtask.get('is_new'):
+        new_subtask = Subtask(task_id=task_id, title=subtask['title'],
+                              index=subtask['index'], is_completed=subtask['is_completed'])
         db.add(new_subtask)
 
 

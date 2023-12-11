@@ -4,7 +4,7 @@ from pydantic import UUID4
 from app.database import get_db
 from app.router.stages import create_new_stage, delete_stage, update_stages
 from app.router.subtasks import create_new_subtask
-from app.schemas import BoardCreateResponse, BoardDataReturn, BoardListReturn, BoardCreate, BoardMigration, BoardUpdate, StageCreate, StageMigration, StageUpdate, SubtaskCreate, TaskCreate
+from app.schemas import BoardCreateResponse, BoardDataReturn, BoardListReturn, BoardCreate, BoardUpdate, StageCreate, StageUpdate
 from app.models import Task, User, Board
 from app.oauth2 import get_current_user
 from sqlalchemy.orm import Session

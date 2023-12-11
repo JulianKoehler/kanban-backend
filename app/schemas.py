@@ -52,8 +52,9 @@ class SubtaskCreate(BaseModel):
 
 
 class SubtaskUpdate(SubtaskCreate):
-    id: UUID4
+    id: UUID4 | str
     markedForDeletion: Optional[bool] = False
+    is_new: Optional[bool] = False
 
 
 class SubtaskResponse(SubtaskUpdate):
@@ -72,7 +73,7 @@ class TaskCreate(TaskBase):
 
 
 class TaskUpdate(TaskCreate):
-    subtasks: List[SubtaskCreate | SubtaskUpdate]
+    subtasks: List[SubtaskUpdate]
 
 
 class TaskUpdateStage(BaseModel):
