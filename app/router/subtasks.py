@@ -35,6 +35,7 @@ def update_subtasks(subtasks: List[SubtaskCreate | SubtaskUpdate], db: Session, 
 
 
 def create_new_subtask(subtask: SubtaskCreate | SubtaskUpdate, db: Session, task_id: UUID4):
+    print(subtask)
     if subtask.get('is_new'):
         new_subtask = Subtask(task_id=task_id, title=subtask['title'],
                               index=subtask['index'], is_completed=subtask['is_completed'])

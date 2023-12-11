@@ -49,12 +49,12 @@ class SubtaskCreate(BaseModel):
     title: str
     index: int
     is_completed: bool
+    is_new: Optional[bool] = False
 
 
 class SubtaskUpdate(SubtaskCreate):
     id: UUID4 | str
     markedForDeletion: Optional[bool] = False
-    is_new: Optional[bool] = False
 
 
 class SubtaskResponse(SubtaskUpdate):
