@@ -1,20 +1,16 @@
+from operator import or_
 from typing import List
+from urllib.parse import unquote
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.responses import JSONResponse
 from pydantic import UUID4
-from sqlalchemy import exc
+from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
 from app.oauth2 import create_access_token, get_current_user
 from app.database import get_db
 from app.schemas import UserCreate, UserInfoReturn, UserReturn
 from app.models import Board, User
 from app.utils.helpers import getFirstAndLastName, hash
-
-import os
-from dotenv import load_dotenv
-
-
-loaded = load_dotenv(".env.local")
-IS_DEV = os.getenv('IS_DEV')
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -31,15 +27,20 @@ def get_current_user_data(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/", response_model=List[UserReturn])
-def get_all_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
+def get_users(q: str | None = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
-    # For better dev experience provide endpoint to list all users
-    # Disabled in production to prevent leakage of user data
-    if IS_DEV:
-        return users
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    if not q:
+        return JSONResponse(content=[])
+
+    query = unquote(q).lower()
+
+    users = db.query(User).filter(User.id != current_user.id, or_(func.lower(User.first_name).startswith(
+        query), or_(func.lower(User.last_name).startswith(query), func.lower(User.email) == query))).all()
+
+    return users
 
 
 @router.get("/{id}", response_model=UserReturn)
@@ -91,9 +92,10 @@ def delete_user(db: Session = Depends(get_db), current_user: User = Depends(get_
     if not current_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    boards = db.query(Board).filter(Board.owner_id == current_user.id).all()
+    has_boards = db.query(Board).filter(
+        Board.owner_id == current_user.id).first()
 
-    if boards:
+    if has_boards:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail='Delete all of your boards before you delete your account.')
 

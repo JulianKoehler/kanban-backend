@@ -1,3 +1,4 @@
+from typing import List, TypeVar
 from app.schemas import StageBase
 from .validation import validate_username
 from passlib.context import CryptContext
@@ -6,7 +7,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def getFirstAndLastName(name: str):
-    validate_username(name) # Making sure we are only dealing with 1 first and 1 lastname seperated by a space
+    # Making sure we are only dealing with 1 first and 1 lastname seperated by a space
+    validate_username(name)
     name_array = name.split(" ")
     first_name = name_array[0]
     last_name: str | None
@@ -28,3 +30,10 @@ def verify(plain_password: str, hashed_password: str):
 
 def get_index(stage: StageBase):
     return stage.index
+
+
+T = TypeVar('T')
+
+
+def getListDiff(list1: List[T], list2: List[T]) -> List[T]:
+    return list(list(set(list1) - set(list2)))

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import get_db
-from app.schemas import SubtaskCreate, SubtaskUpdate
+from app.schemas import SubtaskCreate, SubtaskResponse, SubtaskUpdate
 from app.models import Subtask
 from app.utils.validation import validate_uuid
 
@@ -13,7 +13,7 @@ from app.utils.validation import validate_uuid
 router = APIRouter(prefix="/subtasks", tags=["Subtasks"])
 
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=SubtaskResponse)
 def toggle_subtask_complete(id: UUID4, db: Session = Depends(get_db)):
 
     subtask_query = db.query(Subtask).filter(Subtask.id == id)

@@ -23,7 +23,7 @@ class User(Base):
     is_email_verified: Mapped[bool] = mapped_column(nullable=False, server_default='False')
     password: Mapped[str] = mapped_column(nullable=False)
 
-    own_boards: Mapped[List["Board"]] = relationship(back_populates="owner")
+    own_boards: Mapped[List["Board"]] = relationship(back_populates="owner", order_by='asc(Board.created_at)')
     boards_contributing: Mapped[List["Board"]] = relationship(secondary=boards_users, back_populates="contributors")
 
     def __repr__(self) -> str:
@@ -48,7 +48,6 @@ class Board(Base):
         return f"<Board title={self.title} created by {self.owner.first_name} {self.owner.last_name}>"
 
 
-# Class is called "Stage" as referred to the kanban stage to avoid naming clash with 'Column' from sqlalchemy
 class Stage(Base):
     __tablename__ = "stages"
 

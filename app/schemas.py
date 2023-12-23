@@ -32,6 +32,12 @@ class UserPasswordResetRequest(BaseModel):
     email: EmailStr
 
 
+class ContributorUpdate(BaseModel):
+    id: UUID4
+    is_new: bool
+    marked_for_deletion: bool
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -58,7 +64,7 @@ class SubtaskUpdate(SubtaskCreate):
 
 
 class SubtaskResponse(SubtaskUpdate):
-    pass
+    task_id: UUID4
 
 
 class TaskBase(BaseModel):
@@ -129,10 +135,14 @@ class BoardListItem(BoardBase):
 
 class BoardCreate(BoardBase):
     stages: List[StageCreate]
+    owner_id: UUID4
+    contributors: List[ContributorUpdate]
 
 
 class BoardUpdate(BoardBase):
     stages: List[StageUpdate | StageCreate]
+    owner_id: UUID4
+    contributors: List[ContributorUpdate]
 
 
 class BoardCreateResponse(BoardListItem):
@@ -147,6 +157,8 @@ class BoardListReturn(BaseModel):
 class BoardDataReturn(BoardBase):
     id: UUID4
     stages: List[StageResponse]
+    owner: UserInfoReturn
+    contributors: List[UserInfoReturn]
 
 
 class StageMigration(StageCreate):
