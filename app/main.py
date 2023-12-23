@@ -6,7 +6,7 @@ from .email_service import auth_email_service
 
 app = FastAPI()
 
-origins = ['http://localhost:3000']
+origins = ['https://kanban-board-jet.vercel.app']
 
 app.add_middleware(
     CORSMiddleware,
