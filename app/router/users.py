@@ -8,9 +8,10 @@ from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
 from app.oauth2 import create_access_token, get_current_user
 from app.database import get_db
-from app.schemas import UserCreate, UserInfoReturn, UserReturn
+from app.schemas import UserContributingUpdate, UserCreate, UserInfoReturn, UserReturn
 from app.models import Board, User
 from app.utils.helpers import getFirstAndLastName, hash
+from app.utils.validation import get_board_from_db
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -86,6 +87,15 @@ def create_user(client_data: UserCreate, response: Response,  db: Session = Depe
 
     return new_user
 
+
+@router.put("/", status_code=status.HTTP_204_NO_CONTENT)
+def stop_contributing_to_board(client_data: UserContributingUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
+    (board_query, board) = get_board_from_db(client_data.board_id, db, current_user)
+
+    current_user.boards_contributing.remove(board)
+
+    db.commit()
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

@@ -28,6 +28,10 @@ class UserInfoReturn(UserReturn):
     is_email_verified: bool
 
 
+class UserContributingUpdate(BaseModel):
+    board_id: UUID4
+
+
 class UserPasswordResetRequest(BaseModel):
     email: EmailStr
 

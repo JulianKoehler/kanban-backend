@@ -40,8 +40,9 @@ def create_board(board: BoardCreate, db: Session = Depends(get_db), current_user
 
     board_dict = board.model_dump()
     stages: List[StageCreate] = board_dict.pop('stages')
-    contributors: List[UUID4] = get_new_contributors(board_dict.pop("contributors"))
-    
+    contributors: List[UUID4] = get_new_contributors(
+        board_dict.pop("contributors"))
+
     new_board = Board(**board_dict)
 
     db.add(new_board)
@@ -69,9 +70,11 @@ def update_board(id: UUID4, client_data: BoardUpdate, db: Session = Depends(get_
 
     board_dict = client_data.model_dump()
     incoming_stages: List[StageUpdate] = board_dict.pop("stages")
-    incoming_contributors: List[ContributorUpdate] = board_dict.pop("contributors")
-    
-    removed_contributors: List[UUID4] = get_removed_contributors(incoming_contributors)
+    incoming_contributors: List[ContributorUpdate] = board_dict.pop(
+        "contributors")
+
+    removed_contributors: List[UUID4] = get_removed_contributors(
+        incoming_contributors)
     new_contributors: List[UUID4] = get_new_contributors(incoming_contributors)
 
     board_query.update(board_dict, synchronize_session=False)
@@ -86,17 +89,37 @@ def update_board(id: UUID4, client_data: BoardUpdate, db: Session = Depends(get_
     return board_query.first()
 
 
+@router.put("/{board_id}/owner/{owner_id}", response_model=BoardDataReturn)
+def change_board_owner(board_id: UUID4, owner_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
+    (board_query, board) = get_board_from_db(board_id, db, current_user)
+    new_owner = db.query(User).filter(User.id == owner_id).first()
+
+    if board.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Only the owner of this board can set a new owner.")
+
+    board.contributors.remove(new_owner)
+    board_query.update({'owner_id': owner_id})
+    board.contributors.append(current_user)
+
+    db.commit()
+
+    return board_query.first()
+
+
 @router.delete("/{id}")
 def delete_board(id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     (board_query, board) = get_board_from_db(id, db, current_user)
 
     if not current_user.id == board.owner_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Only the owner of this board can delete it!')
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f'Only the owner of this board can delete it!')
 
     for stage in board.stages:
         delete_stage(stage.__dict__, db)
-    
+
     for contributor in board.contributors:
         board.contributors.remove(contributor)
     db.commit()
@@ -125,7 +148,7 @@ def add_contributors(users: List[UUID4], db: Session, board: Board):
 def remove_contributors(users: List[UUID4], db: Session, board: Board):
     for contributor in users:
         user = db.query(User).filter(User.id == contributor).first()
-        board.contributors.remove(user)   
+        board.contributors.remove(user)
 
 
 def get_removed_contributors(contributors: ContributorUpdate):
