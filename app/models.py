@@ -25,6 +25,7 @@ class User(Base):
 
     own_boards: Mapped[List["Board"]] = relationship(back_populates="owner", order_by='asc(Board.created_at)')
     boards_contributing: Mapped[List["Board"]] = relationship(secondary=boards_users, back_populates="contributors")
+    assigned_tasks: Mapped[List['Task']] = relationship(back_populates='assigned_user', order_by='asc(Task.created_at)')
 
     def __repr__(self) -> str:
         return f"<User username={self.first_name} {self.last_name}>"
@@ -72,6 +73,8 @@ class Task(Base):
     created_at: Mapped[str] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=False)
+    assigned_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    assigned_user: Mapped["User"] = relationship()
 
     status: Mapped["Stage"] = relationship()
     subtasks: Mapped[List["Subtask"]] = relationship(order_by='asc(Subtask.index)')

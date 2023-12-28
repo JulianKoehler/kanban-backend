@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.database import get_db
 from app.router.subtasks import create_new_subtask, delete_subtask, update_subtasks
-from app.schemas import SubtaskCreate, TaskCreate, TaskDeleteResponse, TaskResponse, TaskUpdate, TaskUpdateStage
+from app.schemas import SubtaskCreate, TaskCreate, TaskDeleteResponse, TaskResponse, TaskUpdate, TaskUpdateAssignedUser, TaskUpdateStage
 from app.models import Stage, Task, User, Board
 from app.oauth2 import get_current_user
 from app.utils.helpers import get_index
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 def create_task(client_data: TaskCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     board = db.query(Board).filter(Board.id == client_data.board_id).first()
-    check_board_permission(board, current_user)
+    check_board_permission(board, current_user.id)
 
     task = client_data.model_dump(exclude='board_id')
     subtasks = task.pop('subtasks')
@@ -45,7 +45,7 @@ def create_task(client_data: TaskCreate, db: Session = Depends(get_db), current_
 def update_task(id: UUID4, client_data: TaskUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     board = db.query(Board).filter(Board.id == client_data.board_id).first()
-    check_board_permission(board, current_user)
+    check_board_permission(board, current_user.id)
 
     task_query = db.query(Task).filter(Task.id == id)
     task = task_query.first()
@@ -63,19 +63,38 @@ def update_task(id: UUID4, client_data: TaskUpdate, db: Session = Depends(get_db
 
     return task
 
-@router.patch("/{id}",response_model=TaskResponse)
+@router.patch("/stage/{id}",response_model=TaskResponse)
 def update_stage(id: UUID4, client_data: TaskUpdateStage, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     task_query = db.query(Task).filter(Task.id == id)
     task = task_query.first()
     stage = db.query(Stage).filter(Stage.id == task.stage_id).first()
     board = db.query(Board).filter(Board.id == stage.board_id).first()
-    check_board_permission(board, current_user)
+
+    check_board_permission(board, current_user.id)
 
     task_query.update({ "stage_id": client_data.new_stage_id })
     db.commit()
 
     return task
+
+
+@router.patch("/assignment/{id}",response_model=TaskResponse)
+def update_stage(id: UUID4, client_data: TaskUpdateAssignedUser, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
+    task_query = db.query(Task).filter(Task.id == id)
+    task = task_query.first()
+    stage = db.query(Stage).filter(Stage.id == task.stage_id).first()
+    board = db.query(Board).filter(Board.id == stage.board_id).first()
+
+    check_board_permission(board, current_user.id)
+    check_board_permission(board, client_data.assigned_user_id)
+
+    task_query.update({ 'assigned_user_id': client_data.assigned_user_id })
+    db.commit()
+
+    return task
+
 
 @router.delete("/{id}", response_description="Task successfully deleted", response_model=TaskDeleteResponse)
 def delete_task(id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -84,7 +103,7 @@ def delete_task(id: UUID4, db: Session = Depends(get_db), current_user: User = D
     task = task_query.first()
     stage = db.query(Stage).filter(Stage.id == task.stage_id).first()
     board = db.query(Board).filter(Board.id == stage.board_id).first()
-    check_board_permission(board, current_user)
+    check_board_permission(board, current_user.id)
 
     for subtask in task.subtasks:
         delete_subtask(subtask, db)

@@ -21,7 +21,7 @@ def create_stage(client_data: StageCreate, db: Session = Depends(get_db), curren
                             detail="Please provide a valid UUID4 as reference to the board of this stage")
 
     board = db.query(Board).filter(Board.id == client_data.board_id).first()
-    check_board_permission(board, current_user)
+    check_board_permission(board, current_user.id)
 
     new_stage = Stage(**client_data.model_dump())
     db.add(new_stage)

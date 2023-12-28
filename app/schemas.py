@@ -79,6 +79,7 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     board_id: str
     stage_id: str
+    assigned_user_id: str | None
     subtasks: List[SubtaskCreate]
 
 
@@ -90,6 +91,10 @@ class TaskUpdateStage(BaseModel):
     new_stage_id: UUID4
 
 
+class TaskUpdateAssignedUser(BaseModel):
+    assigned_user_id: UUID4
+
+
 class Status(BaseModel):
     id: UUID4
     title: str
@@ -99,6 +104,7 @@ class TaskResponse(TaskBase):
     id: UUID4
     status: Status
     subtasks: List[SubtaskResponse]
+    assigned_user: UserInfoReturn | None
 
 
 # Used in the frontend to perform a pessimistic update.

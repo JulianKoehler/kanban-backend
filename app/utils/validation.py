@@ -28,20 +28,22 @@ def get_board_from_db(id: UUID4, db: Session, current_user: User):
     board_query = db.query(Board).filter(Board.id == id)
     board = board_query.first()
 
-    check_board_permission(board, current_user)
+    check_board_permission(board, current_user.id)
 
     return (board_query, board)
 
 
-def check_board_permission(board: Board | None, current_user: User):
+def check_board_permission(board: Board | None, user_id: UUID4):
     if not board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Couldn't find board with id {id}")
 
     is_user_contributor = False
-    is_user_owner = board.owner_id == current_user.id
+    is_user_owner = board.owner_id == user_id
 
     for user in board.contributors:
-        if user.id == current_user.id:
+        print(user.id)
+        print(user_id)
+        if user.id == user_id:
             is_user_contributor = True
     
     if not is_user_contributor and not is_user_owner:
