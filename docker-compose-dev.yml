@@ -1,0 +1,28 @@
+version: '3'
+services:
+  api:
+    build: .
+    depends_on:
+      - database
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/usr/src/app:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./.env
+  database:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_INITDB_ARGS='--encoding=UTF-8'
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
+
+#  cat *path_to_sql_backupfile* | docker exec -i backend-database-1 psql -U postgres -d kanban

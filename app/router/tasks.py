@@ -64,7 +64,7 @@ def update_task(id: UUID4, client_data: TaskUpdate, db: Session = Depends(get_db
     return task
 
 @router.patch("/stage/{id}",response_model=TaskResponse)
-def update_stage(id: UUID4, client_data: TaskUpdateStage, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_assigned_user(id: UUID4, client_data: TaskUpdateStage, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     task_query = db.query(Task).filter(Task.id == id)
     task = task_query.first()
@@ -80,7 +80,7 @@ def update_stage(id: UUID4, client_data: TaskUpdateStage, db: Session = Depends(
 
 
 @router.patch("/assignment/{id}",response_model=TaskResponse)
-def update_stage(id: UUID4, client_data: TaskUpdateAssignedUser, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_assigned_user(id: UUID4, client_data: TaskUpdateAssignedUser, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     task_query = db.query(Task).filter(Task.id == id)
     task = task_query.first()

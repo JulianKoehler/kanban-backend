@@ -89,7 +89,7 @@ def update_board(id: UUID4, client_data: BoardUpdate, db: Session = Depends(get_
     return board_query.first()
 
 
-@router.put("/{board_id}/owner/{owner_id}", response_model=BoardDataReturn)
+@router.patch("/{board_id}/owner/{owner_id}", response_model=BoardDataReturn)
 def change_board_owner(board_id: UUID4, owner_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     (board_query, board) = get_board_from_db(board_id, db, current_user)

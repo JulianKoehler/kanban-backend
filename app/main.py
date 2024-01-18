@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .router import users, auth, boards, stages, tasks, subtasks
-from .email_service import auth_email_service
 
 
 app = FastAPI()
