@@ -5,7 +5,7 @@ from .router import users, auth, boards, stages, tasks, subtasks
 
 app = FastAPI()
 
-origins = ['http://localhost:3000']
+origins = ['https://kanban-board-jet.vercel.app']
 
 app.add_middleware(
     CORSMiddleware,
