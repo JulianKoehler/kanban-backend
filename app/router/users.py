@@ -99,9 +99,15 @@ def stop_contributing_to_board(client_data: UserContributingUpdate, db: Session 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    unique_guest_user = db.query(User).filter(User.email == 'test@account.com').first()
+
+    if current_user.id == unique_guest_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You can't delete the guest user.")
+
     if not current_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
+    
     has_boards = db.query(Board).filter(
         Board.owner_id == current_user.id).first()
 
